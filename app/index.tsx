@@ -1,19 +1,19 @@
-import { Stack, Link } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { Button } from '~/components/Button';
-import { Container } from '~/components/Container';
-import { ScreenContent } from '~/components/ScreenContent';
-
-export default function Home() {
+const StartPage: React.FC = () => {
   return (
-    <>
-      <Stack.Screen options={{ title: 'Home' }} />
-      <Container>
-        <ScreenContent path="app/index.tsx" title="Home" />
-        <Link href={{ pathname: '/details', params: { name: 'Dan' } }} asChild>
-          <Button title="Show Details" />
-        </Link>
-      </Container>
-    </>
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#0000ff" />
+    </View>
   );
-}
+};
+
+export default StartPage;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+});
