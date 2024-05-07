@@ -4,14 +4,15 @@ import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps } from 'react
 type ButtonProps = {
   onPress?: TouchableOpacityProps['onPress'];
   title?: string;
+  color: string;
   customStyle?: any;
 } & TouchableOpacityProps;
 
 export const Button = forwardRef<TouchableOpacity, ButtonProps>(
-  ({ onPress, title, customStyle }, ref) => {
+  ({ onPress, title, customStyle, color }, ref) => {
     return (
       <TouchableOpacity ref={ref} style={[styles.button, customStyle]} onPress={onPress}>
-        <Text style={styles.buttonText}>{title}</Text>
+        <Text style={[styles.buttonText, { color: color }]}>{title}</Text>
       </TouchableOpacity>
     );
   }
