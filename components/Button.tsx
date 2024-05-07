@@ -4,37 +4,35 @@ import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps } from 'react
 type ButtonProps = {
   onPress?: TouchableOpacityProps['onPress'];
   title?: string;
+  customStyle?: any;
 } & TouchableOpacityProps;
 
-export const Button = forwardRef<TouchableOpacity, ButtonProps>(({ onPress, title }, ref) => {
-  return (
-    <TouchableOpacity ref={ref} style={styles.button} onPress={onPress}>
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-});
+export const Button = forwardRef<TouchableOpacity, ButtonProps>(
+  ({ onPress, title, customStyle }, ref) => {
+    return (
+      <TouchableOpacity ref={ref} style={[styles.button, customStyle]} onPress={onPress}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </TouchableOpacity>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
-    backgroundColor: '#6366F1',
-    borderRadius: 24,
-    elevation: 5,
+    backgroundColor: '#fff',
+    borderRadius: 15,
     flexDirection: 'row',
     justifyContent: 'center',
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      height: 2,
-      width: 0,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    borderWidth: 1,
+    borderColor: '#eeeef0',
+    borderStyle: 'solid',
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#000',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     textAlign: 'center',
   },
 });

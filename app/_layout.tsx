@@ -2,9 +2,9 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { SecureStorageTokenCache } from '~/utils/TokenCache';
 
-const CLERK_PUBLISHABLE_KEY = Constants.expoConfig?.extra.clerkPublishableKey;
+const CLERK_PUBLISHABLE_KEY = Constants.expoConfig!.extra!.clerkPublishableKey;
 
 const InitialLayout = () => {
   const { isLoaded, isSignedIn } = useAuth();
@@ -26,28 +26,27 @@ const InitialLayout = () => {
   return <Slot />;
 };
 
-const tokenCache = {
-  async getToken(key: string) {
-    try {
-      return SecureStore.getItemAsync(key);
-    } catch (err) {
-      console.log('Fail to get token, key', key);
-      return null;
-    }
-  },
-  async saveToken(key: string, value: string) {
-    try {
-      return SecureStore.setItemAsync(key, value);
-    } catch (err) {
-      console.log('Fail to save token, key', key);
-      return;
-    }
-  },
-};
+// const tokenCache = {
+//   async getToken(key: string) {
+//     try {
+//       return SecureStore.getItemAsync(key);
+//     } catch (err) {
+//       console.error('Fail to get token,, key', key, 'error', JSON.stringify(err));
+//       return null;
+//     }
+//   },
+//   async saveToken(key: string, value: string) {
+//     try {
+//       return SecureStore.setItemAsync(key, value);
+//     } catch (err) {
+//       console.error('Fail to save token, key', key, 'error', JSON.stringify(err));
+//     }
+//   },
+// };
 
 export default function RootLayout() {
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={SecureStorageTokenCache}>
       <InitialLayout />
     </ClerkProvider>
   );

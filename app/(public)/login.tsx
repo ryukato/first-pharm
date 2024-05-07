@@ -1,15 +1,27 @@
-import { useSignIn } from '@clerk/clerk-expo';
+import { useSession, useSignIn } from '@clerk/clerk-expo';
 import { Link } from 'expo-router';
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Button, Pressable, Text, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet, TextInput, Pressable, Text } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
+import { Button } from '~/components/Button';
+import SignInWithOAuth from '~/components/SignInWithOAuth';
 
 const Login: React.FC = () => {
+  const { session } = useSession();
   const { signIn, setActive, isLoaded } = useSignIn();
 
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  useMemo(() => {
+    const invalidateSesson = async () => {
+      console.log('session', session);
+      if (session && session.status === 'active') {
+        await session!.remove();
+      }
+    };
+    invalidateSesson();
+  }, []);
 
   const onSignInPress = async () => {
     if (!isLoaded) {
@@ -54,7 +66,7 @@ const Login: React.FC = () => {
       />
 
       <Button onPress={onSignInPress} title="Login" color="#6c47ff" />
-
+      <SignInWithOAuth />
       <Link href="/reset" asChild>
         <Pressable style={styles.button}>
           <Text>Forgot password?</Text>
