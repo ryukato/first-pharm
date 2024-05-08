@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import _ from 'lodash';
 
-const Home: React.FC = () => {
+const Search: React.FC = () => {
   const [search, setSearch] = useState('');
   const [searching, setSearching] = useState(false);
 
@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default Search;

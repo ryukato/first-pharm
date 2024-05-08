@@ -1,13 +1,13 @@
 import { useAuth, useSession, useUser } from '@clerk/clerk-expo';
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
 const Profile: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, isSignedIn } = useAuth();
   const { user } = useUser();
-  const { session, isSignedIn } = useSession();
+  const { session } = useSession();
 
   // states
   const [username, setUsername] = useState<string | null>(null);
@@ -38,7 +38,6 @@ const Profile: React.FC = () => {
       const base64Image = await FileSystem.readAsStringAsync(result.assets[0].uri, {
         encoding: 'base64',
       });
-      console.log(base64Image);
       onProfileImageUpdatePress(base64Image);
     }
   };
@@ -66,7 +65,7 @@ const Profile: React.FC = () => {
       await user?.update({
         username,
       });
-      alert('Updated!');
+      alert('Profile is updated');
     } catch (error: any) {
       console.error('Fail to update user, error', error);
     }
@@ -80,8 +79,8 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <View>
-      <Text>This is home</Text>
+    <View style={styles.container}>
+      <Text>This is user profile screen</Text>
       <Text>isSignedIn: {isSignedIn}</Text>
       <Text>Session id: {session?.id}</Text>
       <Text>Session status: {session?.status}</Text>

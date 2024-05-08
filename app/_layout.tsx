@@ -2,6 +2,7 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+
 import { SecureStorageTokenCache } from '~/utils/TokenCache';
 
 const CLERK_PUBLISHABLE_KEY = Constants.expoConfig!.extra!.clerkPublishableKey;
@@ -15,34 +16,16 @@ const InitialLayout = () => {
     if (!isLoaded) return;
     const inTabsGroup = segments[0] === '(auth)';
 
-    console.log('user changed: ', isSignedIn);
-
     if (isSignedIn && !inTabsGroup) {
-      router.replace('/home');
+      console.debug('User has signed in, go to search');
+      router.replace('/search');
     } else if (!isSignedIn) {
+      console.debug('User has not signed in yet, go to login');
       router.replace('/login');
     }
   }, [isSignedIn]);
   return <Slot />;
 };
-
-// const tokenCache = {
-//   async getToken(key: string) {
-//     try {
-//       return SecureStore.getItemAsync(key);
-//     } catch (err) {
-//       console.error('Fail to get token,, key', key, 'error', JSON.stringify(err));
-//       return null;
-//     }
-//   },
-//   async saveToken(key: string, value: string) {
-//     try {
-//       return SecureStore.setItemAsync(key, value);
-//     } catch (err) {
-//       console.error('Fail to save token, key', key, 'error', JSON.stringify(err));
-//     }
-//   },
-// };
 
 export default function RootLayout() {
   return (
