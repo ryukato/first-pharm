@@ -5,11 +5,7 @@ const PublicLayout: React.FC = () => {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#6c47ff',
-        },
-        headerTintColor: '#fff',
-        headerBackTitle: 'Back',
+        headerStyle: {},
       }}>
       <Stack.Screen
         name="login"

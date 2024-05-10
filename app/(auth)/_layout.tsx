@@ -1,25 +1,36 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import React from 'react';
 
 const AuthLayout: React.FC = () => {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'blue' }}>
-      <Tabs.Screen
+    <Stack
+      screenOptions={{
+        headerRight: ({ color }) => (
+          <Link href="/profile">
+            <Ionicons name="person-circle" size={28} color={color} />
+          </Link>
+        ),
+      }}>
+      <Stack.Screen
         name="search"
         options={{
-          headerShown: false,
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={28} color={color} />,
+          headerTitle: 'Search',
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="profile"
         options={{
-          headerShown: false,
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={28} color={color} />,
+          headerTitle: 'Profile',
         }}
       />
-    </Tabs>
+      <Stack.Screen
+        name="scan"
+        options={{
+          headerTitle: 'Barcode Scan',
+        }}
+      />
+    </Stack>
   );
 };
 

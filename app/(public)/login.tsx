@@ -1,9 +1,8 @@
 import { useSession, useSignIn } from '@clerk/clerk-expo';
+import { Button } from '@rneui/base';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Text } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay';
-import { Button } from '~/components/Button';
 import SignInWithOAuth from '~/components/SignInWithOAuth';
 
 const Login: React.FC = () => {
@@ -47,26 +46,50 @@ const Login: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Spinner visible={loading} />
+      <SignInWithOAuth authType="oauth_google" />
+      {/* <SignInWithOAuth authType="oauth_apple" /> */}
+      {/* <SignInWithOAuth authType="oauth_facebook" /> */}
+      <View
+        style={{
+          marginVertical: 10,
+          alignContent: 'space-around',
+          flexDirection: 'column',
+          justifyContent: 'space-evenly',
+        }}>
+        <TextInput
+          style={styles.inputField}
+          autoCapitalize="none"
+          placeholder="email address"
+          value={emailAddress}
+          onChangeText={setEmailAddress}
+        />
+        <TextInput
+          secureTextEntry
+          style={styles.inputField}
+          autoCapitalize="none"
+          placeholder="password"
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TextInput
-        style={styles.inputField}
-        autoCapitalize="none"
-        placeholder="email address"
-        value={emailAddress}
-        onChangeText={setEmailAddress}
-      />
-      <TextInput
-        secureTextEntry
-        style={styles.inputField}
-        autoCapitalize="none"
-        placeholder="password"
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <Button onPress={onSignInPress} title="Login" color="#6c47ff" />
-      <SignInWithOAuth />
+        <Button
+          onPress={onSignInPress}
+          title="Login"
+          iconContainerStyle={{ marginRight: 10 }}
+          titleStyle={{ fontWeight: '700' }}
+          buttonStyle={{
+            backgroundColor: 'rgba(90, 154, 230, 1)',
+            borderColor: 'transparent',
+            borderWidth: 0,
+            borderRadius: 30,
+          }}
+          containerStyle={{
+            marginTop: 10,
+            marginBottom: 10,
+            width: '100%',
+          }}
+        />
+      </View>
       <Link href="/reset" asChild>
         <Pressable style={styles.button}>
           <Text>Forgot password?</Text>

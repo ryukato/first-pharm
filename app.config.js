@@ -17,6 +17,14 @@ module.exports = {
         photosPermission: 'The app accesses your photos.',
       },
     ],
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
+        microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone',
+        recordAudioAndroid: true,
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

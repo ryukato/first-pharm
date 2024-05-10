@@ -1,26 +1,50 @@
-import { SearchBar, Button } from '@rneui/themed';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Button, SearchBar } from '@rneui/base';
+import { Link, useLocalSearchParams } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import _ from 'lodash';
+import ProductList from '~/components/ProductList';
+
+import MediProductApiClient from '~/utils/openapi/medi-product-query-api-client';
 
 const Search: React.FC = () => {
-  const [search, setSearch] = useState('');
+  // this is just for testing, please remove the init value once testing is done
+  const [search, setSearch] = useState('8806718073525');
   const [searching, setSearching] = useState(false);
+  const [searchBarPlaceHolder, setSearchBarPlaceHolder] = useState('Please type to search');
+  const { searchTerm } = useLocalSearchParams<{ searchTerm: string }>();
+  const [productList, setProductList] = useState([]);
 
-  const handleSearch = _.debounce((searchTerm: string) => {
+  useMemo(() => {
+    // this is to handle data from scanning, and the data has to be number
+    if (searchTerm && searchTerm.length > 6 && !isNaN(Number(searchTerm))) {
+      setSearch(searchTerm);
+    } else if (searchTerm && searchTerm.length > 1) {
+      console.warn('Invalid data for searching, data=', searchTerm);
+      setSearchBarPlaceHolder("Invalid code scan, can't search it");
+    }
+  }, []);
+
+  const onSearchButtonPress = async () => {
+    setSearching(true);
+
+    const apiClient = new MediProductApiClient();
+    let prodList = null;
     try {
-      console.log('do search with ', searchTerm);
+      if (isNaN(Number(search))) {
+        prodList = await apiClient.findByName(search);
+      } else {
+        prodList = await apiClient.findByBarcode(search);
+      }
+      console.debug('product-information', JSON.stringify(prodList));
+      setProductList(prodList);
+    } catch (error: any) {
+      console.error('Fail to search product, error', JSON.stringify(error));
+      alert('Fail to search');
     } finally {
       setSearching(false);
     }
-  }, 2000);
-  const onSearchContentChangeHandler = useCallback((newVal: string) => {
-    setSearch(newVal);
-    if (newVal && newVal.length > 1 && !searching) {
-      setSearching(true);
-      handleSearch(newVal);
-    }
-  }, []);
+  };
 
   return (
     <View style={styles.container}>
@@ -34,25 +58,41 @@ const Search: React.FC = () => {
           round
           showCancel
           showLoading={searching}
-          placeholder="Type Here..."
+          placeholder={searchBarPlaceHolder}
           value={search}
-          onChangeText={onSearchContentChangeHandler}
+          onChangeText={(text: string) => {
+            setSearch(text);
+          }}
         />
+        <Link replace href="/scan">
+          <Ionicons name="barcode-outline" size={28} color="#f50" />
+        </Link>
+      </View>
+      <View style={{ flexDirection: 'row', padding: 5, justifyContent: 'center' }}>
         <Button
+          onPress={onSearchButtonPress}
+          loading={searching}
+          title="Search"
           icon={{
-            name: 'barcode-outline',
-            type: 'ionicon',
-            size: 35,
-            color: '#f50',
+            name: 'search',
+            type: 'ionicons',
+            size: 15,
+            color: 'white',
           }}
-          iconContainerStyle={{ marginLeft: -10 }}
+          iconContainerStyle={{ marginRight: 10 }}
+          titleStyle={{ fontWeight: '700' }}
           buttonStyle={{
-            backgroundColor: 'transparent',
+            backgroundColor: 'rgba(90, 154, 230, 1)',
             borderColor: 'transparent',
+            borderWidth: 0,
+            borderRadius: 30,
           }}
-          loadingProps={{ animating: true }}
+          containerStyle={{
+            width: '80%',
+          }}
         />
       </View>
+      {productList.length > 0 && <ProductList list={productList} />}
     </View>
   );
 };
@@ -60,14 +100,12 @@ const Search: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
+    justifyContent: 'flex-start',
   },
   searchBarContainer: {
-    flex: 1,
     flexDirection: 'row',
     width: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#00000000',
   },
@@ -77,6 +115,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.1,
     borderRadius: 15,
     backgroundColor: '#00000000',
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
   },
   searchBarInputContainer: {
     backgroundColor: '#fff',
