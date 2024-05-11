@@ -1,8 +1,9 @@
 import { useAuth, useSession, useUser } from '@clerk/clerk-expo';
-import * as FileSystem from 'expo-file-system';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, Image, TouchableOpacity } from 'react-native';
+import { profileImageStore } from '~/store/ProfileImageStore';
 
 const Profile: React.FC = () => {
   const { signOut, isSignedIn } = useAuth();
@@ -12,14 +13,27 @@ const Profile: React.FC = () => {
   // states
   const [username, setUsername] = useState<string | null>(null);
   const [phonenumber, setPhonenumber] = useState<string | null>(null);
+  const [secondaryEmailAddress, setSecondaryEmailAddress] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
 
-  useMemo(() => {
+  useMemo(async () => {
     if (session?.user.username) {
       setUsername(session?.user.username);
     }
+    if (session?.user.firstName && session.user.lastName) {
+      setUsername(`${session?.user.lastName} ${session.user.firstName}`);
+    }
     if (session?.user.primaryPhoneNumber) {
       setPhonenumber(session!.user.primaryPhoneNumber.phoneNumber);
+    }
+
+    const primaryEmailAddress = session?.user.primaryEmailAddress?.emailAddress;
+    if (primaryEmailAddress) {
+      setSecondaryEmailAddress(primaryEmailAddress);
+      const profileImage = await profileImageStore.getProfileImage(primaryEmailAddress);
+      if (profileImage) {
+        setImage(profileImage.value);
+      }
     }
   }, []);
 
@@ -34,25 +48,24 @@ const Profile: React.FC = () => {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      const base64Image = await FileSystem.readAsStringAsync(result.assets[0].uri, {
-        encoding: 'base64',
-      });
-      onProfileImageUpdatePress(base64Image);
+      const imagePath = result.assets[0].uri;
+      setImage(imagePath);
+      console.log('picked image', imagePath);
+      onProfileImageUpdatePress(imagePath);
     }
   };
 
-  // TODO fix this because of error invalid base64 image
-  const onProfileImageUpdatePress = async (base64Image: string | null) => {
-    if (!image) {
+  const onProfileImageUpdatePress = async (imagePath: string) => {
+    console.log('do update profile image');
+    if (!imagePath) {
       return;
     }
     try {
-      await user?.setProfileImage({
-        file: base64Image,
+      await profileImageStore.saveProfileImage(user!.primaryEmailAddress!.emailAddress, {
+        type: 'path',
+        value: imagePath,
       });
-      alert('Profile image Updated!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fail to update user, error', JSON.stringify(error));
     }
   };
@@ -72,7 +85,8 @@ const Profile: React.FC = () => {
   };
 
   const onLogoutPress = async () => {
-    if (!session?.user.username) {
+    if (!session?.status === 'active') {
+      console.debug('user session is not active');
       return;
     }
     await signOut();
@@ -80,31 +94,45 @@ const Profile: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text>This is user profile screen</Text>
-      <Text>isSignedIn: {isSignedIn}</Text>
-      <Text>Session id: {session?.id}</Text>
-      <Text>Session status: {session?.status}</Text>
-      <Text>Userid: {session?.user.id}</Text>
-      <Text>User email status: {user?.primaryEmailAddress?.verification.status}</Text>
-
-      <Text>Primary email address: {user?.primaryEmailAddress?.emailAddress}</Text>
-      <View>
-        {image && <Image source={{ uri: image }} style={styles.image} />}
+      <TouchableOpacity onPress={pickImage}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <Ionicons name="person-circle-outline" size={150} style={styles.image} />
+        )}
+      </TouchableOpacity>
+      <View style={{ padding: 10 }}>
+        {username ? <Text style={styles.label}>email address</Text> : null}
         <TextInput
-          style={styles.inputText}
+          style={styles.input}
           autoCapitalize="none"
-          placeholder="username"
+          placeholder="email address"
+          value={secondaryEmailAddress}
+          onChangeText={secondaryEmailAddress}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        {username ? <Text style={styles.label}>user name</Text> : null}
+        <TextInput
+          style={styles.input}
+          autoCapitalize="none"
+          placeholder="user name"
           value={username}
           onChangeText={setUsername}
         />
+      </View>
+      <View style={styles.inputContainer}>
+        {phonenumber ? <Text style={styles.label}>phone number</Text> : null}
         <TextInput
-          style={styles.inputText}
+          style={styles.input}
           autoCapitalize="none"
           placeholder="phone number"
           value={phonenumber}
+          keyboardType="phone-pad"
           onChangeText={setPhonenumber}
         />
-        <Button title="Pick an image from camera roll" onPress={pickImage} />
+      </View>
+      <View style={{ marginTop: 50 }}>
         <Button title="Update profile" color="#6c47ff" onPress={onUpdateProfilePress} />
         <Button title="Logout" color="#6c47ff" onPress={onLogoutPress} />
       </View>
@@ -115,16 +143,20 @@ const Profile: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'column',
     padding: 20,
+    backgroundColor: '#fff',
+  },
+  inputContainer: {
+    padding: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DDE1E2',
+    backgroundColor: '#fff',
+    height: 50,
   },
   inputText: {
     marginVertical: 4,
     height: 50,
-    borderWidth: 1,
-    borderColor: '#6c47ff',
-    borderRadius: 4,
-    padding: 10,
     backgroundColor: '#fff',
   },
   button: {
@@ -132,9 +164,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     alignSelf: 'center',
+    borderRadius: 75,
+  },
+  input: {
+    paddingVertical: 3,
+    width: '100%',
+    fontSize: 16,
+    height: 40,
+  },
+  label: {
+    position: 'absolute',
+    left: 0,
+    top: -1,
+    fontSize: 12,
+    color: '#B1B8BC',
   },
 });
 

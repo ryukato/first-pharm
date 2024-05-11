@@ -11,7 +11,7 @@ const ProductList: React.FC = ({ list }: any) => {
       {/* <Divider width={3} color="#757574" inset insetType="middle" /> */}
       <Divider
         style={styles.divider}
-        color="#757574"
+        color="#DDE1E2"
         insetType="left"
         subHeaderStyle={{}}
         width={2}
@@ -24,7 +24,7 @@ const ProductList: React.FC = ({ list }: any) => {
               <ListItem.Content right={false} style={styles.listContent}>
                 <View style={styles.contentContainer}>
                   <Text style={styles.itemTitle}>{item.itemName}</Text>
-                  <Text style={styles.itemSubTitle}>({item.validTerm})</Text>
+                  {/* <Text style={styles.itemSubTitle}>({item.validTerm})</Text> */}
                   <Text style={styles.itemSubTitle}>({item.entpName})</Text>
                 </View>
               </ListItem.Content>
@@ -45,29 +45,40 @@ const styles = StyleSheet.create({
     marginLeft: 40,
   },
   listTouchable: {
-    borderRadius: 15,
+    padding: 1,
   },
   listItemContainer: {
-    borderColor: '#ECE9E8',
-    borderWidth: 1,
+    borderColor: '#DDE1E2',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderStyle: 'solid',
     borderRadius: 15,
   },
   listContent: {
-    marginLeft: 40,
+    padding: 2,
+    marginLeft: 10,
+    height: 30,
   },
   contentContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 15,
   },
   itemTitle: {
-    fontSize: 16,
-    marginHorizontal: 3,
+    fontSize: 14,
+    textAlign: 'left',
   },
   itemSubTitle: {
     fontSize: 11,
-    alignSelf: 'flex-end',
-    marginLeft: 5,
+    alignSelf: 'flex-start',
+    bottom: -15,
+  },
+  entpNameLabel: {
+    position: 'absolute',
+    left: 0,
+    bottom: -15,
+    fontSize: 12,
   },
 });
 

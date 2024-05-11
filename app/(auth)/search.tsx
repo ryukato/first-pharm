@@ -101,25 +101,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
+    backgroundColor: '#fff',
   },
   searchBarContainer: {
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00000000',
+    backgroundColor: '#fff',
   },
 
   searchBar: {
     width: '90%',
-    borderWidth: 0.1,
-    borderRadius: 15,
-    backgroundColor: '#00000000',
-    borderTopWidth: 0,
     borderBottomWidth: 0,
+    backgroundColor: '#fff',
   },
   searchBarInputContainer: {
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#DDE1E2',
   },
   leftIconContainerStyle: {
     backgroundColor: '#fff',
