@@ -1,14 +1,12 @@
 import { Divider, ListItem } from '@rneui/base';
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
 import { MediProductModel } from '~/models/models';
 
 const ProductList: React.FC = ({ list }: any) => {
   return (
-    <GestureHandlerRootView>
-      {/* <Divider width={3} color="#757574" inset insetType="middle" /> */}
+    <View>
       <Divider
         style={styles.divider}
         color="#DDE1E2"
@@ -17,22 +15,25 @@ const ProductList: React.FC = ({ list }: any) => {
         width={2}
         orientation="horizontal"
       />
-      <View style={styles.container}>
-        {list.map((item: MediProductModel, index: number) => (
-          <TouchableOpacity key={index} style={styles.listTouchable} onPress={() => {}}>
-            <ListItem topDivider bottomDivider containerStyle={styles.listItemContainer}>
-              <ListItem.Content right={false} style={styles.listContent}>
-                <View style={styles.contentContainer}>
-                  <Text style={styles.itemTitle}>{item.itemName}</Text>
-                  {/* <Text style={styles.itemSubTitle}>({item.validTerm})</Text> */}
-                  <Text style={styles.itemSubTitle}>({item.entpName})</Text>
-                </View>
-              </ListItem.Content>
-            </ListItem>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </GestureHandlerRootView>
+
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
+        <View style={styles.container}>
+          {list.map((item: MediProductModel, index: number) => (
+            <TouchableOpacity key={index} style={styles.listTouchable} onPress={() => {}}>
+              <ListItem topDivider bottomDivider containerStyle={styles.listItemContainer}>
+                <ListItem.Content right={false} style={styles.listContent}>
+                  <View style={styles.contentContainer}>
+                    <Text style={styles.itemTitle}>{item.itemName}</Text>
+                    {/* <Text style={styles.itemSubTitle}>({item.validTerm})</Text> */}
+                    <Text style={styles.itemSubTitle}>({item.entpName})</Text>
+                  </View>
+                </ListItem.Content>
+              </ListItem>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

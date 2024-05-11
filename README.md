@@ -45,6 +45,9 @@ npx expo start --clear
 
 ### 페이징처리
 
-- 더보기 버튼을 추가하여 처리한다.
-  - 버튼 선택 시, 페이지 번호를 증가 시켜 요청하고 기존 목록 데이터에 추가한다.
-- 현재 items만 처리하나, 추가로 body내의 pageNo, totalCount등을 같이 처리해줘야 함
+1. 더보기 버튼을 추가하여 처리한다. (DONE, but `#2 and #3` has to be fixed)
+
+- 버튼 선택 시, 페이지 번호를 증가 시켜 요청하고 기존 목록 데이터에 추가한다.
+
+2. 현재 items만 처리하나, 추가로 body내의 pageNo, totalCount등을 같이 처리해줘야 함
+3. make the prod list view boxed

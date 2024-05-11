@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Button, SearchBar } from '@rneui/base';
+import { SearchBar } from '@rneui/base';
 import { Link, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
 import ProductList from '~/components/ProductList';
-
-import MediProductApiClient from '~/utils/openapi/medi-product-query-api-client';
+import LoadingButton from '~/components/ui/LoadingButton';
+import { MediProductModel } from '~/models/models';
+import { isIPhoneX } from '~/utils/device';
+import { apiClient } from '~/utils/openapi/medi-product-query-api-client';
 
 const Search: React.FC = () => {
   // this is just for testing, please remove the init value once testing is done
@@ -13,7 +15,8 @@ const Search: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const [searchBarPlaceHolder, setSearchBarPlaceHolder] = useState('Please type to search');
   const { searchTerm } = useLocalSearchParams<{ searchTerm: string }>();
-  const [productList, setProductList] = useState([]);
+  const [productList, setProductList] = useState<MediProductModel[]>([]);
+  const [page, setPage] = useState(1);
 
   useMemo(() => {
     // this is to handle data from scanning, and the data has to be number
@@ -25,75 +28,107 @@ const Search: React.FC = () => {
     }
   }, []);
 
-  const onSearchButtonPress = async () => {
-    setSearching(true);
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
-    const apiClient = new MediProductApiClient();
-    let prodList = null;
+  const onMoreButtonPressHandler = async () => {
+    setSearching(true);
     try {
-      if (isNaN(Number(search))) {
-        prodList = await apiClient.findByName(search);
-      } else {
-        prodList = await apiClient.findByBarcode(search);
+      const list = await doSearch(page + 1);
+      if (list && list.length > 1) {
+        setPage(page + 1);
+        setProductList(productList.concat(list));
       }
-      console.debug('product-information', JSON.stringify(prodList));
-      setProductList(prodList);
     } catch (error: any) {
-      console.error('Fail to search product, error', JSON.stringify(error));
+      console.error('Fail to search prouct, error', JSON.stringify(error));
       alert('Fail to search');
     } finally {
       setSearching(false);
     }
   };
 
+  const onSearhButtonPressHandler = async () => {
+    if (!search || search.length < 1) {
+      alert('Please input search');
+      return;
+    }
+    setProductList([]);
+    setSearching(true);
+    try {
+      const list = await doSearch(page);
+      setProductList(list);
+    } catch (error: any) {
+      console.error('Fail to search prouct, error', JSON.stringify(error));
+      alert('Fail to search');
+    } finally {
+      setSearching(false);
+    }
+  };
+  const doSearch = async (pageNo: number): Promise<MediProductModel[]> => {
+    if (isNaN(Number(search))) {
+      return await apiClient.findByName(search, {
+        pageNo,
+      });
+    } else {
+      return await apiClient.findByBarcode(search, {
+        pageNo,
+      });
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.searchBarContainer}>
-        <SearchBar
-          containerStyle={styles.searchBar}
-          inputContainerStyle={styles.searchBarInputContainer}
-          leftIconContainerStyle={styles.leftIconContainerStyle}
-          rightIconContainerStyle={styles.rightIconContainerStyle}
-          lightTheme
-          round
-          showCancel
-          showLoading={searching}
-          placeholder={searchBarPlaceHolder}
-          value={search}
-          onChangeText={(text: string) => {
-            setSearch(text);
-          }}
-        />
-        <Link replace href="/scan">
-          <Ionicons name="barcode-outline" size={28} color="#f50" />
-        </Link>
+    <SafeAreaView style={{ flex: 1, backgrounColor: '#fff' }}>
+      <View style={styles.container}>
+        <View style={styles.searchBarContainer}>
+          <SearchBar
+            containerStyle={styles.searchBar}
+            inputContainerStyle={styles.searchBarInputContainer}
+            leftIconContainerStyle={styles.leftIconContainerStyle}
+            rightIconContainerStyle={styles.rightIconContainerStyle}
+            lightTheme
+            round
+            showCancel
+            showLoading={searching}
+            placeholder={searchBarPlaceHolder}
+            value={search}
+            onChangeText={(text: string) => {
+              setSearch(text);
+            }}
+          />
+          <Link replace href="/scan">
+            <Ionicons name="barcode-outline" size={28} color="#f50" />
+          </Link>
+        </View>
+        <View style={{ flexDirection: 'row', padding: 5, justifyContent: 'center' }}>
+          <LoadingButton
+            title="Search"
+            onPress={onSearhButtonPressHandler}
+            isLoading={searching}
+            style={{ width: '90%' }}
+            iconName="search-outline"
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          {productList.length > 0 && <ProductList list={productList} />}
+        </View>
       </View>
-      <View style={{ flexDirection: 'row', padding: 5, justifyContent: 'center' }}>
-        <Button
-          onPress={onSearchButtonPress}
-          loading={searching}
-          title="Search"
-          icon={{
-            name: 'search',
-            type: 'ionicons',
-            size: 15,
-            color: 'white',
-          }}
-          iconContainerStyle={{ marginRight: 10 }}
-          titleStyle={{ fontWeight: '700' }}
-          buttonStyle={{
-            backgroundColor: 'rgba(90, 154, 230, 1)',
-            borderColor: 'transparent',
-            borderWidth: 0,
-            borderRadius: 30,
-          }}
-          containerStyle={{
-            width: '80%',
-          }}
-        />
-      </View>
-      {productList.length > 0 && <ProductList list={productList} />}
-    </View>
+      {productList && productList.length > 0 && (
+        <View
+          style={[
+            styles.buttonContainer,
+            { flexDirection: 'row', justifyContent: 'center', padding: 10 },
+          ]}>
+          <LoadingButton
+            title="More"
+            onPress={onMoreButtonPressHandler}
+            isLoading={searching}
+            style={{ width: '50%' }}
+            iconName="arrow-down-outline"
+          />
+        </View>
+      )}
+    </SafeAreaView>
   );
 };
 
@@ -126,6 +161,14 @@ const styles = StyleSheet.create({
   },
   rightIconContainerStyle: {
     backgroundColor: '#fff',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+    bottom: 30,
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    marginBottom: isIPhoneX() ? 16 : 0,
   },
 });
 

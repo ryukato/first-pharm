@@ -16,3 +16,8 @@ export type Property = {
 export type Entry<T> = {
   [K in keyof T]: [K, T[K]];
 }[keyof T];
+
+export type OffsetPagingParameters = {
+  pageNo: number;
+  size?: number;
+};

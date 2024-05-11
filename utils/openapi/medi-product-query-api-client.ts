@@ -4,7 +4,7 @@ import { MEDI_API_RES_KEYS } from './medi-product-res-keys';
 import { MetadataFinder } from './metadata-finder';
 import { PropertyExtractor } from './property-extractor';
 import { PropertyResolverFactory } from './property-resolver';
-import { Metadata } from './types';
+import { Metadata, OffsetPagingParameters } from './types';
 
 export default class MediProductApiClient {
   private baseUrl: string =
@@ -23,9 +23,11 @@ export default class MediProductApiClient {
     }
   }
 
-  async findByName(name: string): Promise<any> {
-    const requestUrl = `${this.baseUrl}&pageNo=1&numOfRows=10&item_name=${encodeURIComponent(name)}`;
-    // console.debug('requestUrl', requestUrl);
+  async findByName(name: string, pagingParameter: OffsetPagingParameters): Promise<any> {
+    const page = pagingParameter.pageNo;
+    const numOfRows = pagingParameter.size || 10;
+    const requestUrl = `${this.baseUrl}&pageNo=${page}&numOfRows=${numOfRows}&item_name=${encodeURIComponent(name)}`;
+    console.debug('requestUrl', requestUrl);
     let response: Response | null = null;
     try {
       response = await fetch(requestUrl, DEFAULT_GET_REQ_OPTIONS);
@@ -44,8 +46,11 @@ export default class MediProductApiClient {
     return this.resolveResponse(jsonResponse);
   }
 
-  async findByBarcode(barcode: string): Promise<any> {
-    const requestUrl = `${this.baseUrl}&pageNo=1&numOfRows=10&bar_code=${barcode}`;
+  async findByBarcode(barcode: string, pagingParameter: OffsetPagingParameters): Promise<any> {
+    const page = pagingParameter.pageNo;
+    const numOfRows = pagingParameter.size || 10;
+    const requestUrl = `${this.baseUrl}&pageNo=${page}&numOfRows=${numOfRows}&bar_code=${barcode}`;
+    console.debug('requestUrl', requestUrl);
     let response: Response | null = null;
     try {
       response = await fetch(requestUrl, DEFAULT_GET_REQ_OPTIONS);
@@ -155,3 +160,5 @@ export default class MediProductApiClient {
     }
   }
 }
+
+export const apiClient = new MediProductApiClient();
