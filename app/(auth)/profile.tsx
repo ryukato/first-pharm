@@ -1,6 +1,6 @@
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useAuth, useSession, useUser } from '@clerk/clerk-expo';
+import { useSession, useUser } from '@clerk/clerk-expo';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Button } from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
 import {
@@ -13,13 +13,13 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { profileImageStore } from '~/store/ProfileImageStore';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { profileImageStore } from '~/store/ProfileImageStore';
 import { isIPhoneX } from '~/utils/device';
-import { Button } from '@rneui/base';
 
 const Profile: React.FC = () => {
-  const { signOut } = useAuth();
   const { user } = useUser();
   const { session } = useSession();
 
@@ -27,7 +27,7 @@ const Profile: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [lastName, setLastName] = useState<string | null>(null);
-  const [phonenumber, setPhonenumber] = useState<string | null>(null);
+  // const [phonenumber, setPhonenumber] = useState<string | null>(null);
   const [secondaryEmailAddress, setSecondaryEmailAddress] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -40,9 +40,9 @@ const Profile: React.FC = () => {
       setLastName(session?.user.lastName);
       setFirstName(session?.user.firstName);
     }
-    if (session?.user.primaryPhoneNumber) {
-      setPhonenumber(session!.user.primaryPhoneNumber.phoneNumber);
-    }
+    // if (session?.user.primaryPhoneNumber) {
+    //   setPhonenumber(session!.user.primaryPhoneNumber.phoneNumber);
+    // }
 
     const primaryEmailAddress = session?.user.primaryEmailAddress?.emailAddress;
     if (primaryEmailAddress) {
