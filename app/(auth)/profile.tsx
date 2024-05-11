@@ -1,27 +1,44 @@
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth, useSession, useUser } from '@clerk/clerk-expo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, Image, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import { profileImageStore } from '~/store/ProfileImageStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { isIPhoneX } from '~/utils/device';
+import { Button } from '@rneui/base';
 
 const Profile: React.FC = () => {
-  const { signOut, isSignedIn } = useAuth();
+  const { signOut } = useAuth();
   const { user } = useUser();
   const { session } = useSession();
 
   // states
   const [username, setUsername] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [lastName, setLastName] = useState<string | null>(null);
   const [phonenumber, setPhonenumber] = useState<string | null>(null);
   const [secondaryEmailAddress, setSecondaryEmailAddress] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useMemo(async () => {
     if (session?.user.username) {
       setUsername(session?.user.username);
     }
     if (session?.user.firstName && session.user.lastName) {
-      setUsername(`${session?.user.lastName} ${session.user.firstName}`);
+      setLastName(session?.user.lastName);
+      setFirstName(session?.user.firstName);
     }
     if (session?.user.primaryPhoneNumber) {
       setPhonenumber(session!.user.primaryPhoneNumber.phoneNumber);
@@ -75,77 +92,138 @@ const Profile: React.FC = () => {
       return;
     }
     try {
+      setIsUpdating(true);
       await user?.update({
         username,
+        firstName,
+        lastName,
       });
       alert('Profile is updated');
     } catch (error: any) {
-      console.error('Fail to update user, error', error);
+      console.error('Fail to update user, error', JSON.stringify(error));
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const onLogoutPress = async () => {
-    if (!session?.status === 'active') {
-      console.debug('user session is not active');
-      return;
-    }
-    await signOut();
-  };
+  // const onLogoutPress = async () => {
+  //   if (!session?.status === 'active') {
+  //     console.debug('user session is not active');
+  //     return;
+  //   }
+  //   await signOut();
+  // };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
-        ) : (
-          <Ionicons name="person-circle-outline" size={150} style={styles.image} />
-        )}
-      </TouchableOpacity>
-      <View style={{ padding: 10 }}>
-        {username ? <Text style={styles.label}>email address</Text> : null}
-        <TextInput
-          style={styles.input}
-          autoCapitalize="none"
-          placeholder="email address"
-          value={secondaryEmailAddress}
-          onChangeText={secondaryEmailAddress}
+    <SafeAreaView style={styles.flex}>
+      <KeyboardAwareScrollView style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
+          <View>
+            <TouchableOpacity onPress={pickImage}>
+              {image ? (
+                <Image source={{ uri: image }} style={styles.image} />
+              ) : (
+                <Ionicons name="person-circle-outline" size={150} style={styles.image} />
+              )}
+            </TouchableOpacity>
+            <View style={{ padding: 10 }}>
+              <TextInput
+                readOnly
+                value={secondaryEmailAddress}
+                style={styles.input}
+                autoCapitalize="none"
+                placeholder="email address"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              {username ? <Text style={styles.label}>User name</Text> : null}
+              <TextInput
+                style={styles.input}
+                autoCapitalize="none"
+                placeholder="user name"
+                value={username}
+                autoCompleteType="name"
+                disabled={isUpdating}
+                onChangeText={setUsername}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              {lastName ? <Text style={styles.label}>Last name</Text> : null}
+              <TextInput
+                style={styles.input}
+                autoCapitalize="none"
+                placeholder="last name"
+                value={lastName}
+                autoCompleteType="name"
+                disabled={isUpdating}
+                onChangeText={setLastName}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              {firstName ? <Text style={styles.label}>First name</Text> : null}
+              <TextInput
+                style={styles.input}
+                autoCapitalize="none"
+                placeholder="Fist name"
+                value={firstName}
+                autoCompleteType="name"
+                disabled={isUpdating}
+                onChangeText={setFirstName}
+              />
+            </View>
+            {/* <View style={styles.inputContainer}> */}
+            {/*   {phonenumber ? <Text style={styles.label}>phone number</Text> : null} */}
+            {/*   <TextInput */}
+            {/*     style={styles.input} */}
+            {/*     autoCapitalize="none" */}
+            {/*     placeholder="phone number" */}
+            {/*     value={phonenumber} */}
+            {/*     autoCompleteType="phonenumber" */}
+            {/*     disabled={isUpdating} */}
+            {/*     keyboardType="phone-pad" */}
+            {/*     onChangeText={setPhonenumber} */}
+            {/*   /> */}
+            {/* </View> */}
+          </View>
+        </ScrollView>
+      </KeyboardAwareScrollView>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          onPress={onUpdateProfilePress}
+          loading={isUpdating}
+          title="Save"
+          icon={{
+            name: 'save',
+            type: 'ionicons',
+            size: 25,
+            color: 'white',
+          }}
+          iconContainerStyle={{ marginRight: 10 }}
+          titleStyle={{ fontWeight: '700' }}
+          buttonStyle={{
+            backgroundColor: 'rgba(90, 154, 230, 1)',
+            borderColor: 'transparent',
+            borderWidth: 0,
+            borderRadius: 30,
+          }}
+          containerStyle={{
+            width: '100%',
+          }}
         />
       </View>
-      <View style={styles.inputContainer}>
-        {username ? <Text style={styles.label}>user name</Text> : null}
-        <TextInput
-          style={styles.input}
-          autoCapitalize="none"
-          placeholder="user name"
-          value={username}
-          onChangeText={setUsername}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        {phonenumber ? <Text style={styles.label}>phone number</Text> : null}
-        <TextInput
-          style={styles.input}
-          autoCapitalize="none"
-          placeholder="phone number"
-          value={phonenumber}
-          keyboardType="phone-pad"
-          onChangeText={setPhonenumber}
-        />
-      </View>
-      <View style={{ marginTop: 50 }}>
-        <Button title="Update profile" color="#6c47ff" onPress={onUpdateProfilePress} />
-        <Button title="Logout" color="#6c47ff" onPress={onLogoutPress} />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
-    flexDirection: 'column',
-    padding: 20,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16,
   },
   inputContainer: {
     padding: 5,
@@ -158,6 +236,14 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     height: 50,
     backgroundColor: '#fff',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+    bottom: 50,
+    backgroundColor: 'white',
+    paddingVertical: 8,
+    marginBottom: isIPhoneX() ? 16 : 0,
   },
   button: {
     margin: 8,
