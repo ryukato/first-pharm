@@ -88,7 +88,7 @@ const Profile: React.FC = () => {
   };
 
   const onUpdateProfilePress = async () => {
-    if (!username) {
+    if (!username || !firstName || !lastName) {
       return;
     }
     try {
@@ -126,7 +126,7 @@ const Profile: React.FC = () => {
                 <Ionicons name="person-circle-outline" size={150} style={styles.image} />
               )}
             </TouchableOpacity>
-            <View style={{ padding: 10 }}>
+            <View style={{ padding: 10, alignSelf: 'center' }}>
               <TextInput
                 readOnly
                 value={secondaryEmailAddress}
