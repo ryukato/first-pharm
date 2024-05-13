@@ -1,8 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SearchBar } from '@rneui/base';
 import { Link, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, SafeAreaView, TextInput } from 'react-native';
+
 import ProductList from '~/components/ProductList';
 import LoadingButton from '~/components/ui/LoadingButton';
 import { MediProductModel } from '~/models/models';
@@ -53,12 +53,12 @@ const Search: React.FC = () => {
       alert('Please input search');
       return;
     }
-    setProductList([]);
     setSearching(true);
     try {
       const list = await doSearch(page);
       setProductList(list);
     } catch (error: any) {
+      setProductList([]);
       console.error('Fail to search prouct, error', JSON.stringify(error));
       alert('Fail to search');
     } finally {
@@ -77,28 +77,52 @@ const Search: React.FC = () => {
     }
   };
 
+  const ScanButton: React.FC = () => {
+    return (
+      <Link replace href="/scan">
+        <Ionicons name="barcode-outline" size={28} color="#f50" />
+      </Link>
+    );
+  };
+
+  const NoMatchedParagraph: React.FC = () => {
+    return (
+      <View style={{ marginTop: 40, flexDirection: 'row', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#DDE1E2' }}>
+          No matched product
+        </Text>
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgrounColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.container}>
         <View style={styles.searchBarContainer}>
-          <SearchBar
-            containerStyle={styles.searchBar}
-            inputContainerStyle={styles.searchBarInputContainer}
-            leftIconContainerStyle={styles.leftIconContainerStyle}
-            rightIconContainerStyle={styles.rightIconContainerStyle}
-            lightTheme
-            round
-            showCancel
-            showLoading={searching}
-            placeholder={searchBarPlaceHolder}
-            value={search}
-            onChangeText={(text: string) => {
-              setSearch(text);
-            }}
-          />
-          <Link replace href="/scan">
-            <Ionicons name="barcode-outline" size={28} color="#f50" />
-          </Link>
+          <View style={styles.searchBar}>
+            <View
+              style={[
+                styles.searchBarInputContainer,
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                },
+              ]}>
+              <Ionicons
+                style={{ marginLeft: 5, marginRight: 5 }}
+                name="search-outline"
+                size={20}
+                color="#DDE1E2"
+              />
+              <TextInput
+                style={{ paddingVertical: 3, fontSize: 16, height: 40 }}
+                placeholder={searchBarPlaceHolder}
+                value={search}
+                onChangeText={setSearch}
+              />
+            </View>
+          </View>
+          <ScanButton />
         </View>
         <View style={{ flexDirection: 'row', padding: 5, justifyContent: 'center' }}>
           <LoadingButton
@@ -109,15 +133,26 @@ const Search: React.FC = () => {
             iconName="search-outline"
           />
         </View>
-        <View style={{ flex: 1 }}>
-          {productList.length > 0 && <ProductList list={productList} />}
+        <View style={{ height: '85%' }}>
+          {productList && productList.length > 0 ? (
+            <ProductList list={productList} />
+          ) : (
+            <NoMatchedParagraph />
+          )}
         </View>
       </View>
       {productList && productList.length > 0 && (
         <View
           style={[
             styles.buttonContainer,
-            { flexDirection: 'row', justifyContent: 'center', padding: 10 },
+            {
+              height: '5%',
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              padding: 10,
+              backgroundColor: 'transparent',
+            },
           ]}>
           <LoadingButton
             title="More"
@@ -141,6 +176,7 @@ const styles = StyleSheet.create({
   searchBarContainer: {
     flexDirection: 'row',
     width: '100%',
+    height: '10%',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',

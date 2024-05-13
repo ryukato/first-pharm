@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { IconProps } from '@expo/vector-icons/build/createIconSet';
 import React, { CSSProperties } from 'react';
 import { ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 

@@ -1,4 +1,4 @@
-import { Divider, ListItem } from '@rneui/base';
+import { ListItem } from '@rneui/base';
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
@@ -7,13 +7,15 @@ import { MediProductModel } from '~/models/models';
 const ProductList: React.FC = ({ list }: any) => {
   return (
     <View>
-      <Divider
-        style={styles.divider}
-        color="#DDE1E2"
-        insetType="left"
-        subHeaderStyle={{}}
-        width={2}
-        orientation="horizontal"
+      <View
+        style={[
+          styles.divider,
+          {
+            flexDirection: 'row',
+            backgroundColor: '#DDE1E2',
+            height: 2,
+          },
+        ]}
       />
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
