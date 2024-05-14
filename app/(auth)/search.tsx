@@ -8,6 +8,7 @@ import LoadingButton from '~/components/ui/LoadingButton';
 import { MediProductModel } from '~/models/models';
 import { isIPhoneX } from '~/utils/device';
 import { apiClient } from '~/utils/openapi/medi-product-query-api-client';
+import { SearchedProductList } from '~/utils/openapi/types';
 
 const Search: React.FC = () => {
   // this is just for testing, please remove the init value once testing is done
@@ -17,6 +18,7 @@ const Search: React.FC = () => {
   const { searchTerm } = useLocalSearchParams<{ searchTerm: string }>();
   const [productList, setProductList] = useState<MediProductModel[]>([]);
   const [page, setPage] = useState(1);
+  const [hasMoreProducts, setHasMoreProducts] = useState(false);
 
   useMemo(() => {
     // this is to handle data from scanning, and the data has to be number
@@ -35,7 +37,10 @@ const Search: React.FC = () => {
   const onMoreButtonPressHandler = async () => {
     setSearching(true);
     try {
-      const list = await doSearch(page + 1);
+      const { paging, list }: SearchedProductList = await doSearch(page + 1);
+      if (paging.pageNo * paging.numOfRows > paging.totalCount) {
+        setHasMoreProducts(false);
+      }
       if (list && list.length > 1) {
         setPage(page + 1);
         setProductList(productList.concat(list));
@@ -55,8 +60,11 @@ const Search: React.FC = () => {
     }
     setSearching(true);
     try {
-      const list = await doSearch(page);
+      const { paging, list }: SearchedProductList = await doSearch(page);
       setProductList(list);
+      if (paging.pageNo * paging.numOfRows < paging.totalCount) {
+        setHasMoreProducts(true);
+      }
     } catch (error: any) {
       setProductList([]);
       console.error('Fail to search prouct, error', JSON.stringify(error));
@@ -65,7 +73,7 @@ const Search: React.FC = () => {
       setSearching(false);
     }
   };
-  const doSearch = async (pageNo: number): Promise<MediProductModel[]> => {
+  const doSearch = async (pageNo: number): Promise<SearchedProductList> => {
     if (isNaN(Number(search))) {
       return await apiClient.findByName(search, {
         pageNo,
@@ -135,13 +143,18 @@ const Search: React.FC = () => {
         </View>
         <View style={{ height: '85%' }}>
           {productList && productList.length > 0 ? (
-            <ProductList list={productList} />
+            <ProductList
+              list={productList}
+              onPressItem={(item) => {
+                console.log('selected item', JSON.stringify(item));
+              }}
+            />
           ) : (
             <NoMatchedParagraph />
           )}
         </View>
       </View>
-      {productList && productList.length > 0 && (
+      {hasMoreProducts && (
         <View
           style={[
             styles.buttonContainer,

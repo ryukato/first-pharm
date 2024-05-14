@@ -1,41 +1,39 @@
-import { ListItem } from '@rneui/base';
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 
 import { MediProductModel } from '~/models/models';
+import { ParsedXmlContentResolver } from '~/utils/openapi/content-element-resolver';
 
-const ProductList: React.FC = ({ list }: any) => {
+export type ProductListProps = {
+  list: MediProductModel[];
+  onPressItem: (item: MediProductModel) => void;
+};
+
+const ProductList: React.FC = ({ list, onPressItem }: ProductListProps) => {
   return (
-    <View>
-      <View
-        style={[
-          styles.divider,
-          {
-            flexDirection: 'row',
-            backgroundColor: '#DDE1E2',
-            height: 2,
-          },
-        ]}
-      />
-
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
-        <View style={styles.container}>
-          {list.map((item: MediProductModel, index: number) => (
-            <TouchableOpacity key={index} style={styles.listTouchable} onPress={() => {}}>
-              <ListItem topDivider bottomDivider containerStyle={styles.listItemContainer}>
-                <ListItem.Content right={false} style={styles.listContent}>
-                  <View style={styles.contentContainer}>
-                    <Text style={styles.itemTitle}>{item.itemName}</Text>
-                    {/* <Text style={styles.itemSubTitle}>({item.validTerm})</Text> */}
-                    <Text style={styles.itemSubTitle}>({item.entpName})</Text>
-                  </View>
-                </ListItem.Content>
-              </ListItem>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+    <>
+      <View style={styles.divider} />
+      <View style={styles.container}>
+        <FlatList
+          data={list}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity style={{ marginTop: 5 }} onPress={() => onPressItem(item)}>
+                <View style={styles.listItemContainer}>
+                  <Text style={styles.itemTitle}>{item.itemName}</Text>
+                  <Text style={styles.itemSubTitle}>({item.entpName})</Text>
+                </View>
+                {/* <View> */}
+                {/*   <Text>{resolvedEffects}</Text> */}
+                {/*   <Text>{resolvedUsage}</Text> */}
+                {/*   <Text>{resolvedCaution}</Text> */}
+                {/* </View> */}
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
+    </>
   );
 };
 
@@ -44,44 +42,30 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   divider: {
-    width: '80%',
-    marginLeft: 40,
-  },
-  listTouchable: {
-    padding: 1,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    width: '90%',
+    height: 3,
+    backgroundColor: '#DDE1E2',
   },
   listItemContainer: {
-    borderColor: '#DDE1E2',
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderStyle: 'solid',
-    borderRadius: 15,
-  },
-  listContent: {
-    padding: 2,
-    marginLeft: 10,
-    height: 30,
-  },
-  contentContainer: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#DDE1E2',
+    borderRadius: '15',
   },
   itemTitle: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'left',
   },
   itemSubTitle: {
     fontSize: 11,
-    alignSelf: 'flex-start',
-    bottom: -15,
-  },
-  entpNameLabel: {
-    position: 'absolute',
-    left: 0,
-    bottom: -15,
-    fontSize: 12,
+    marginTop: 3,
+    marginLeft: 5,
   },
 });
 

@@ -3,6 +3,7 @@ import { Metadata, Property, ValueTypes } from './types';
 
 export interface PropertyResolver<T> {
   resolve(property: Property, metadata: Metadata): Record<string, T>;
+  name(): string;
 }
 
 export class PlainTextPropertyResolver implements PropertyResolver<string> {
@@ -14,9 +15,17 @@ export class PlainTextPropertyResolver implements PropertyResolver<string> {
     if (metadata.nullable) {
       obj[metadata.name] = '';
     } else {
-      obj[metadata.name] = property.value.toString();
+      if (!property.value) {
+        obj[metadata.name] = '';
+      } else {
+        obj[metadata.name] = property.value.toString();
+      }
     }
     return obj;
+  }
+
+  name(): string {
+    return 'PlainTextPropertyResolver';
   }
 }
 
@@ -33,6 +42,10 @@ export class PlainNumberPropertyResolver implements PropertyResolver<number> {
     }
     return obj;
   }
+
+  name(): string {
+    return 'PlainNumberPropertyResolver';
+  }
 }
 
 export class ArrayTextPropertyResolver implements PropertyResolver<string[]> {
@@ -46,13 +59,24 @@ export class ArrayTextPropertyResolver implements PropertyResolver<string[]> {
       throw Error(`Invalid value, it has to be array text and has separator`);
     }
 
-    if (metadata.nullable || property.value.toString().length < 1) {
+    if (metadata.nullable && !property.value) {
+      obj[metadata.name] = [];
+    } else if (metadata.nullable || property.value.toString().length < 1) {
       obj[metadata.name] = [];
     } else {
-      const values = property.value.toString().split(metadata.separator);
-      obj[metadata.name] = [...values];
+      try {
+        const values = property.value.toString().split(metadata.separator);
+        obj[metadata.name] = [...values];
+      } catch (error: any) {
+        console.warn('Fail to parse array text, raw value', property.value, 'cause: ', error);
+        throw Error('Fail to parse array text');
+      }
     }
     return obj;
+  }
+
+  name(): string {
+    return 'ArrayTextPropertyResolver';
   }
 }
 
@@ -70,13 +94,22 @@ export class ArrayNumberPropertyResolver implements PropertyResolver<number[]> {
     if (metadata.nullable || property.value.toString().length < 1) {
       obj[metadata.name] = [];
     } else {
-      const values = property.value
-        .toString()
-        .split(metadata.separator)
-        .map((it: any) => Number(it));
-      obj[metadata.name] = [...values];
+      try {
+        const values = property.value
+          .toString()
+          .split(metadata.separator)
+          .map((it: any) => Number(it));
+        obj[metadata.name] = [...values];
+      } catch (error: any) {
+        console.warn('Fail to parse array number, raw value', property.value, 'cause: ', error);
+        throw Error('Fail to parse array number');
+      }
     }
     return obj;
+  }
+
+  name(): string {
+    return 'ArrayNumberPropertyResolver';
   }
 }
 
@@ -97,12 +130,19 @@ export class XmlPropertyResolver implements PropertyResolver<any> {
     if (metadata.nullable || property.value.toString().length < 1) {
       obj[metadata.name] = {};
     } else {
-      // console.debug('raw xml value', property.value);
-      const xmlObj = this.xmlParser.parse(property.value);
-      obj[metadata.name] = xmlObj;
-      // obj[metadata.name] = '{}';
+      try {
+        const xmlObj = this.xmlParser.parse(property.value);
+        obj[metadata.name] = xmlObj;
+      } catch (error: any) {
+        console.warn('Fail to parse xml data, xml data', property.value, 'cause: ', error);
+        throw Error('Fail to parse xml data');
+      }
     }
     return obj;
+  }
+
+  name(): string {
+    return 'XmlPropertyResolver';
   }
 }
 

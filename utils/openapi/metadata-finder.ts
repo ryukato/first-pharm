@@ -90,7 +90,7 @@ const metadatas: Array<Metadata> = [
     key: 'INGR_NAME',
     type: 'array-text',
     separator: '|',
-    nullable: false,
+    nullable: true,
     name: 'ingrName',
   },
 ];

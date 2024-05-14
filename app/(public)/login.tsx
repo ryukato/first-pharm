@@ -1,9 +1,9 @@
 import { useSession, useSignIn } from '@clerk/clerk-expo';
-import { Button } from '@rneui/base';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, TextInput, Pressable, Text } from 'react-native';
 import SignInWithOAuth from '~/components/SignInWithOAuth';
+import LoadingButton from '~/components/ui/LoadingButton';
 
 const Login: React.FC = () => {
   const { session } = useSession();
@@ -72,22 +72,12 @@ const Login: React.FC = () => {
           onChangeText={setPassword}
         />
 
-        <Button
-          onPress={onSignInPress}
+        <LoadingButton
           title="Login"
-          iconContainerStyle={{ marginRight: 10 }}
-          titleStyle={{ fontWeight: '700' }}
-          buttonStyle={{
-            backgroundColor: 'rgba(90, 154, 230, 1)',
-            borderColor: 'transparent',
-            borderWidth: 0,
-            borderRadius: 30,
-          }}
-          containerStyle={{
-            marginTop: 10,
-            marginBottom: 10,
-            width: '100%',
-          }}
+          onPress={onSignInPress}
+          isLoading={loading}
+          style={{ width: '100%' }}
+          iconName="log-in-outline"
         />
       </View>
       <Link href="/reset" asChild>

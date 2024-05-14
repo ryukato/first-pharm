@@ -1,10 +1,10 @@
-import { MediProductModel, ParagraphItem } from '~/models/models';
+import { MediProductModel } from '~/models/models';
 import { DEFAULT_GET_REQ_OPTIONS } from './default-get-req-options';
 import { MEDI_API_RES_KEYS } from './medi-product-res-keys';
 import { MetadataFinder } from './metadata-finder';
 import { PropertyExtractor } from './property-extractor';
 import { PropertyResolverFactory } from './property-resolver';
-import { Metadata, OffsetPagingParameters } from './types';
+import { Metadata, OffsetPagingParameters, PagingResponse, ProductList } from './types';
 
 export default class MediProductApiClient {
   private baseUrl: string =
@@ -23,7 +23,7 @@ export default class MediProductApiClient {
     }
   }
 
-  async findByName(name: string, pagingParameter: OffsetPagingParameters): Promise<any> {
+  async findByName(name: string, pagingParameter: OffsetPagingParameters): Promise<ProductList> {
     const page = pagingParameter.pageNo;
     const numOfRows = pagingParameter.size || 10;
     const requestUrl = `${this.baseUrl}&pageNo=${page}&numOfRows=${numOfRows}&item_name=${encodeURIComponent(name)}`;
@@ -46,7 +46,10 @@ export default class MediProductApiClient {
     return this.resolveResponse(jsonResponse);
   }
 
-  async findByBarcode(barcode: string, pagingParameter: OffsetPagingParameters): Promise<any> {
+  async findByBarcode(
+    barcode: string,
+    pagingParameter: OffsetPagingParameters
+  ): Promise<ProductList> {
     const page = pagingParameter.pageNo;
     const numOfRows = pagingParameter.size || 10;
     const requestUrl = `${this.baseUrl}&pageNo=${page}&numOfRows=${numOfRows}&bar_code=${barcode}`;
@@ -69,14 +72,13 @@ export default class MediProductApiClient {
   }
 
   private async resolveResponse(jsonResponse: any): Promise<any> {
+    const { pageNo, totalCount, numOfRows }: PagingResponse = jsonResponse['body'];
     const items: any[] = jsonResponse['body']['items'];
-    // console.debug('searched items: ', JSON.stringify(items));
     const keys = MEDI_API_RES_KEYS;
     try {
       if (items && items.length > 0) {
-        return items.map((item) => {
+        const convertedList = items.map((item) => {
           const filtered = new PropertyExtractor().extract(item, keys);
-          // console.debug('filtered', filtered);
           const resolved = Object.entries(filtered).map(([k, v]) => {
             const metadata: Metadata | null = new MetadataFinder().find(k);
             if (!metadata) {
@@ -91,8 +93,23 @@ export default class MediProductApiClient {
           Object.assign(target, ...resolved);
           return this.convertToMediProductModel(target);
         });
+        return {
+          paging: {
+            pageNo,
+            totalCount,
+            numOfRows,
+          },
+          list: convertedList,
+        };
       } else {
-        Promise.resolve([]);
+        Promise.resolve({
+          paging: {
+            pageNo,
+            totalCount,
+            numOfRows,
+          },
+          list: [],
+        });
       }
     } catch (error: any) {
       console.error('Fail to resolve json response, error:', JSON.stringify(error));
@@ -101,7 +118,6 @@ export default class MediProductApiClient {
   }
 
   private convertToMediProductModel(rawData: any): MediProductModel {
-    // console.debug('rawData', rawData);
     try {
       return {
         itemSeq: rawData['itemSeq'],
@@ -114,9 +130,9 @@ export default class MediProductApiClient {
         validTerm: rawData['validTerm'],
         changeDate: rawData['changeDate'],
         gbnName: rawData['gbnName'],
-        effects: this.convertToParagraph(rawData['eeDocData']),
-        usage: this.convertToParagraph(rawData['udDocData']),
-        caution: this.convertToParagraph(rawData['nbDocData']),
+        effects: rawData['eeDocData'],
+        usage: rawData['udDocData'],
+        caution: rawData['nbDocData'],
         // effects: [],
         // usage: [],
         // caution: [],
@@ -126,37 +142,6 @@ export default class MediProductApiClient {
     } catch (error: any) {
       console.error('Fail to conver to medi-product, error:', JSON.stringify(error));
       return {};
-    }
-  }
-
-  private convertToParagraph(rawParagraph: any): ParagraphItem[] {
-    if (!rawParagraph || Object.keys(rawParagraph).length < 1) {
-      return [];
-    }
-    const article = rawParagraph['DOC']['SECTION']['ARTICLE'];
-    if (article) {
-      // check it is array
-      if (Array.isArray(article)) {
-        return (article as any[]).map((item) => {
-          if (item['PARAGRAPH']) {
-            return {
-              content: item['PARAGRAPH'],
-            };
-          } else {
-            return {
-              content: item['title'],
-            };
-          }
-        });
-      } else {
-        return [
-          {
-            content: article['title'],
-          },
-        ];
-      }
-    } else {
-      return [];
     }
   }
 }

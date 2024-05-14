@@ -1,8 +1,8 @@
-import { useSession, useUser } from '@clerk/clerk-expo';
+import { useAuth, useSession, useUser } from '@clerk/clerk-expo';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Button } from '@rneui/base';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
+import { Touchable } from 'react-native';
 import {
   View,
   Text,
@@ -15,12 +15,14 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LoadingButton from '~/components/ui/LoadingButton';
 
 import { profileImageStore } from '~/store/ProfileImageStore';
 import { isIPhoneX } from '~/utils/device';
 
 const Profile: React.FC = () => {
   const { user } = useUser();
+  const { signOut } = useAuth();
   const { session } = useSession();
 
   // states
@@ -106,13 +108,13 @@ const Profile: React.FC = () => {
     }
   };
 
-  // const onLogoutPress = async () => {
-  //   if (!session?.status === 'active') {
-  //     console.debug('user session is not active');
-  //     return;
-  //   }
-  //   await signOut();
-  // };
+  const onLogoutPress = async () => {
+    if (!session?.status === 'active') {
+      console.debug('user session is not active');
+      return;
+    }
+    await signOut();
+  };
 
   return (
     <SafeAreaView style={styles.flex}>
@@ -126,14 +128,24 @@ const Profile: React.FC = () => {
                 <Ionicons name="person-circle-outline" size={150} style={styles.image} />
               )}
             </TouchableOpacity>
-            <View style={{ padding: 10, alignSelf: 'center' }}>
+            <View
+              style={{
+                padding: 10,
+                flexDirection: 'row',
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
               <TextInput
                 readOnly
                 value={secondaryEmailAddress}
-                style={styles.input}
+                style={[styles.input, { width: '50%' }]}
                 autoCapitalize="none"
                 placeholder="email address"
               />
+              <TouchableOpacity onPress={onLogoutPress}>
+                <Ionicons name="log-out-outline" size={20} color="black" />
+              </TouchableOpacity>
             </View>
             <View style={styles.inputContainer}>
               {username ? <Text style={styles.label}>User name</Text> : null}
@@ -171,45 +183,17 @@ const Profile: React.FC = () => {
                 onChangeText={setFirstName}
               />
             </View>
-            {/* <View style={styles.inputContainer}> */}
-            {/*   {phonenumber ? <Text style={styles.label}>phone number</Text> : null} */}
-            {/*   <TextInput */}
-            {/*     style={styles.input} */}
-            {/*     autoCapitalize="none" */}
-            {/*     placeholder="phone number" */}
-            {/*     value={phonenumber} */}
-            {/*     autoCompleteType="phonenumber" */}
-            {/*     disabled={isUpdating} */}
-            {/*     keyboardType="phone-pad" */}
-            {/*     onChangeText={setPhonenumber} */}
-            {/*   /> */}
-            {/* </View> */}
           </View>
         </ScrollView>
       </KeyboardAwareScrollView>
 
       <View style={styles.buttonContainer}>
-        <Button
-          onPress={onUpdateProfilePress}
-          loading={isUpdating}
+        <LoadingButton
           title="Save"
-          icon={{
-            name: 'save',
-            type: 'ionicons',
-            size: 25,
-            color: 'white',
-          }}
-          iconContainerStyle={{ marginRight: 10 }}
-          titleStyle={{ fontWeight: '700' }}
-          buttonStyle={{
-            backgroundColor: 'rgba(90, 154, 230, 1)',
-            borderColor: 'transparent',
-            borderWidth: 0,
-            borderRadius: 30,
-          }}
-          containerStyle={{
-            width: '100%',
-          }}
+          onPress={onUpdateProfilePress}
+          isLoading={isUpdating}
+          style={{ width: '100%' }}
+          iconName="search-outline"
         />
       </View>
     </SafeAreaView>
@@ -243,6 +227,7 @@ const styles = StyleSheet.create({
     bottom: 50,
     backgroundColor: 'white',
     paddingVertical: 8,
+    paddingHorizontal: 10,
     marginBottom: isIPhoneX() ? 16 : 0,
   },
   button: {
