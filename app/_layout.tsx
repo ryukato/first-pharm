@@ -2,6 +2,7 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { SecureStorageTokenCache } from '~/utils/TokenCache';
 
@@ -17,10 +18,8 @@ const InitialLayout = () => {
     const inTabsGroup = segments[0] === '(auth)';
 
     if (isSignedIn && !inTabsGroup) {
-      console.debug('User has signed in, go to search');
       router.replace('/search');
     } else if (!isSignedIn) {
-      console.debug('User has not signed in yet, go to login');
       router.replace('/login');
     }
   }, [isSignedIn]);
@@ -30,7 +29,9 @@ const InitialLayout = () => {
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={SecureStorageTokenCache}>
-      <InitialLayout />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <InitialLayout />
+      </GestureHandlerRootView>
     </ClerkProvider>
   );
 }

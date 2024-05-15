@@ -2,14 +2,13 @@ import React from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 
 import { MediProductModel } from '~/models/models';
-import { ParsedXmlContentResolver } from '~/utils/openapi/content-element-resolver';
 
 export type ProductListProps = {
   list: MediProductModel[];
   onPressItem: (item: MediProductModel) => void;
 };
 
-const ProductList: React.FC = ({ list, onPressItem }: ProductListProps) => {
+const ProductList: React.FC<ProductListProps> = ({ list, onPressItem }) => {
   return (
     <>
       <View style={styles.divider} />

@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams } from 'expo-router';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, SafeAreaView, TextInput } from 'react-native';
 
@@ -145,7 +146,7 @@ const Search: React.FC = () => {
           {productList && productList.length > 0 ? (
             <ProductList
               list={productList}
-              onPressItem={(item) => {
+              onPressItem={(item: MediProductModel) => {
                 console.log('selected item', JSON.stringify(item));
               }}
             />
@@ -154,6 +155,11 @@ const Search: React.FC = () => {
           )}
         </View>
       </View>
+      <BottomSheet snapPoints={['10%', '50%']}>
+        <BottomSheetView style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Awesome 🎉</Text>
+        </BottomSheetView>
+      </BottomSheet>
       {hasMoreProducts && (
         <View
           style={[
