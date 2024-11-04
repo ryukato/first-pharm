@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera/next';
+import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 
 const Scan: React.FC = () => {
