@@ -19,8 +19,9 @@
             window.addEventListener("message", function(event) {
                 console.log(event.data)
                 document.getElementById('logs').append(event.data + "<br />");
+                alert('data' + event.data );
                 // window.ReactNativeWebView.postMessage(data);
-                window.ReactNativeWebView.postMessage(data);
+                // window.ReactNativeWebView.postMessage(data);
             });
            } catch(error) {
             alert('error');

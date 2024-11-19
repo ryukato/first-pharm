@@ -22,11 +22,15 @@ const Scan: React.FC = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const router = useRouter();
   const webviewRef = useRef<WebView>();
+  const alreadySent = new Map();
 
   const sendMessage = (data: string) => {
     if (webviewRef.current) {
-      webviewRef.current.postMessage(data);
-      console.log('sent data to webview', data);
+      if (!alreadySent.has(data)) {
+        alreadySent.set(data, null);
+        webviewRef.current.postMessage(data);
+        console.log('sent data to webview', data);
+      }
     }
   };
 
