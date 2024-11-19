@@ -74,7 +74,7 @@ const Scan: React.FC = () => {
           <Text style={styles.text}>Cancel</Text>
         </TouchableOpacity>
       </View>
-      <View style={{flex: 1}}>
+      <View>
         <WebView ref={webviewRef} source={require('./sample.html')} onMessage={onMessage} />
       </View>
     </View>
