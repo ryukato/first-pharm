@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
+import WebView from 'react-native-webview';
 
 const Scan: React.FC = () => {
   const barcodeTypes = [
@@ -20,6 +21,18 @@ const Scan: React.FC = () => {
   ];
   const [permission, requestPermission] = useCameraPermissions();
   const router = useRouter();
+  const webviewRef = useRef<WebView>();
+
+  const sendMessage = (data: string) => {
+    if (webviewRef.current) {
+      webviewRef.current.postMessage(data);
+      console.log('sent data to webview', data);
+    }
+  };
+
+  const onMessage = (event: any) => {
+    console.log('message from webview', event.nativeEvent.data);
+  };
 
   const onCancelPress = () => {
     router.replace('/search');
@@ -36,6 +49,7 @@ const Scan: React.FC = () => {
       </View>
     );
   }
+
   return (
     <View style={styles.container}>
       <CameraView
@@ -43,18 +57,21 @@ const Scan: React.FC = () => {
         style={styles.camera}
         facing="back"
         barcodeScannerSettings={{
-          barcodeTypes: barcodeTypes,
+          barcodeTypes,
         }}
         onBarcodeScanned={(scanningResult) => {
           const data = scanningResult.data;
-          console.log('data', data);
-          router.replace({ pathname: '/search', params: { searchTerm: data } });
+          sendMessage(data);
+          // router.replace({ pathname: '/search', params: { searchTerm: data } });
         }}
       />
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={onCancelPress}>
           <Text style={styles.text}>Cancel</Text>
         </TouchableOpacity>
+      </View>
+      <View style={{flex: 1}}>
+        <WebView ref={webviewRef} source={require('./sample.html')} onMessage={onMessage} />
       </View>
     </View>
   );
@@ -68,7 +85,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     marginTop: 50,
-    flex: 0.9,
+    flex: 0.5,
   },
   buttonContainer: {
     flexDirection: 'row',

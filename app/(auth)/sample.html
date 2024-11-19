@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>test</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div>
+            <p>This is test webview</p> 
+            <input type="text" id="test_input1">
+        </div>
+        <div id="logs"></div>
+        <script>
+            alert('loaded!!!');
+           try {
+            window.addEventListener("message", function(event) {
+                console.log(event.data)
+                document.getElementById('logs').append(event.data + "<br />");
+                // window.ReactNativeWebView.postMessage(data);
+                window.ReactNativeWebView.postMessage(data);
+            });
+           } catch(error) {
+            alert('error');
+           } 
+        </script>
+    </body>
+</html>

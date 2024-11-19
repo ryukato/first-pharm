@@ -4,6 +4,7 @@
     "slug": "first-pharm",
     "version": "1.0.0",
     "scheme": "first-pharm",
+    "newArchEnabled": true,
     "web": {
       "bundler": "metro",
       "output": "static",
